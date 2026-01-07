@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TurboSynthesizer.UI.Controls.WaveformSelector">
+
+
+    <ContentView.Content>
+        <Border Stroke="{StaticResource Gray500}" 
+                StrokeShape="RoundRectangle 4" 
+                BackgroundColor="{StaticResource Gray950}"
+                Padding="4">
+            <HorizontalStackLayout Spacing="8">
+                <!-- Buttons for waveforms -->
+                <!-- Ideally these would be bound to a list or enum -->
+                <Button Text="SIN" Clicked="OnWaveformClicked" CommandParameter="Sine" Style="{StaticResource WaveformButtonStyle}"/>
+                <Button Text="SAW" Clicked="OnWaveformClicked" CommandParameter="Saw" Style="{StaticResource WaveformButtonStyle}"/>
+                <Button Text="SQR" Clicked="OnWaveformClicked" CommandParameter="Square" Style="{StaticResource WaveformButtonStyle}"/>
+                <Button Text="TRI" Clicked="OnWaveformClicked" CommandParameter="Triangle" Style="{StaticResource WaveformButtonStyle}"/>
+                <Button Text="NOISE" Clicked="OnWaveformClicked" CommandParameter="Noise" Style="{StaticResource WaveformButtonStyle}"/>
+            </HorizontalStackLayout>
+        </Border>
+    </ContentView.Content>
+</ContentView>

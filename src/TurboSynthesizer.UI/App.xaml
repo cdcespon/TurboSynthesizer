@@ -9,6 +9,22 @@
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <Style x:Key="WaveformButtonStyle" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="Transparent"/>
+                <Setter Property="TextColor" Value="{StaticResource Gray200}"/>
+                <Setter Property="BorderWidth" Value="0"/>
+                <Setter Property="FontSize" Value="10"/>
+                <Setter Property="HeightRequest" Value="32"/>
+                <Setter Property="Padding" Value="10,0"/>
+                <Setter Property="MinimumWidthRequest" Value="50"/>
+                <Setter Property="CornerRadius" Value="4"/>
+                <Style.Triggers>
+                    <Trigger TargetType="Button" Property="IsPressed" Value="True">
+                         <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

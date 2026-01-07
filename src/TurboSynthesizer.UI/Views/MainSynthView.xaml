@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:TurboSynthesizer.UI.Controls"
+             xmlns:vm="clr-namespace:TurboSynthesizer.UI.ViewModels"
+             xmlns:entities="clr-namespace:TurboSynthesizer.Data.Entities;assembly=TurboSynthesizer.Data"
+             x:Class="TurboSynthesizer.UI.Views.MainSynthView"
+             x:DataType="vm:MainViewModel"
+             Title="Turbo Synthesizer v0.1">
+             
+    <ContentPage.BindingContext>
+        <vm:MainViewModel />
+    </ContentPage.BindingContext>
+
+
+    <Grid RowDefinitions="Auto, *, Auto" Padding="10" BackgroundColor="{StaticResource Black}" RowSpacing="10">
+        <Grid.GestureRecognizers>
+            <TapGestureRecognizer Tapped="OnBackgroundTapped" />
+        </Grid.GestureRecognizers>
+        
+        <!-- Header / Status / Presets -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto, *, Auto, Auto" ColumnSpacing="15">
+            <Label Grid.Column="0" Text="TURBO SYNTH" TextColor="{StaticResource Primary}" FontAttributes="Bold" FontSize="18" VerticalOptions="Center"/>
+            
+            <!-- MASTER SCOPE -->
+            <Border Grid.Column="1" Stroke="{StaticResource Gray700}" BackgroundColor="{StaticResource Gray950}" HeightRequest="40" VerticalOptions="Center" StrokeShape="RoundRectangle 4">
+                 <controls:OscilloscopeControl Source="Master" LineColor="{StaticResource Primary}" VerticalOptions="Fill" />
+            </Border>
+
+            <Label Grid.Column="2" Text="{Binding StatusMessage}" TextColor="{StaticResource Gray400}" VerticalOptions="Center" HorizontalOptions="Center"/>
+            
+            <!-- PRESET BROWSER -->
+            <Border Grid.Column="3" Stroke="{StaticResource Gray700}" BackgroundColor="{StaticResource Gray950}" 
+                    Padding="10,2" StrokeShape="RoundRectangle 6" WidthRequest="320">
+                <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                    <Label Text="PRESET:" TextColor="{StaticResource Primary}" VerticalOptions="Center" FontAttributes="Bold" FontSize="12"/>
+                    <Picker ItemsSource="{Binding Presets}" ItemDisplayBinding="{Binding Name}" SelectedItem="{Binding SelectedPreset}" 
+                            TextColor="White" TitleColor="Gray" WidthRequest="160" BackgroundColor="Transparent" FontSize="12"/>
+                    
+                    <BoxView WidthRequest="1" Color="{StaticResource Gray700}" VerticalOptions="Fill" Margin="2,2"/>
+                    
+                    <Button Text="SAVE" Command="{Binding SavePresetCommand}" 
+                            BackgroundColor="Transparent" TextColor="{StaticResource Primary}" 
+                            FontSize="11" Padding="5,0" HeightRequest="30"/>
+                    <Button Text="DEL" Command="{Binding DeletePresetCommand}" IsEnabled="{Binding IsUserPreset}" 
+                            BackgroundColor="Transparent" TextColor="#FF5555" 
+                            FontSize="11" Padding="5,0" HeightRequest="30"/>
+                </HorizontalStackLayout>
+            </Border>
+        </Grid>
+
+        <!-- Main Panel -->
+        <Grid Grid.Row="1" ColumnDefinitions="2*, 2*, 2*, 2*, 2*" ColumnSpacing="10">
+            
+            <!-- COL 1: Oscillators -->
+            <Border Grid.Column="0" Stroke="{StaticResource Gray600}" BackgroundColor="{StaticResource Gray900}" Padding="10" StrokeShape="RoundRectangle 8">
+                <Grid RowDefinitions="Auto, *, Auto, *" RowSpacing="15">
+                    <Label Grid.Row="0" Text="OSCILLATORS" FontAttributes="Bold" TextColor="{StaticResource White}" HorizontalOptions="Center"/>
+                    
+                    <!-- OSC 1 AREA -->
+                    <Grid Grid.Row="1" ColumnDefinitions="*, Auto" ColumnSpacing="10">
+                        <VerticalStackLayout Grid.Column="0" Spacing="5">
+                            <Label Text="OSC 1" TextColor="{StaticResource Gray400}" FontSize="10" />
+                            <controls:OscilloscopeControl Source="Osc1" LineColor="#00FFFF" 
+                                                          WaveformType="{Binding Osc1Waveform}" 
+                                                          Amplitude="{Binding MixOsc1}"
+                                                          NoteName="{Binding CurrentNotes}"
+                                                          VerticalOptions="FillAndExpand" />
+                            <controls:WaveformSelector SelectedWaveform="{Binding Osc1Waveform}" />
+                        </VerticalStackLayout>
+                        <controls:VerticalFader Grid.Column="1" Label="MIX" Minimum="0" Maximum="1" Value="{Binding MixOsc1, Mode=TwoWay}" WidthRequest="60" />
+                    </Grid>
+                    
+                    <BoxView Grid.Row="2" HeightRequest="1" Color="{StaticResource Gray700}"/>
+
+                    <!-- OSC 2 AREA -->
+                    <Grid Grid.Row="3" ColumnDefinitions="*, Auto" ColumnSpacing="10">
+                        <VerticalStackLayout Grid.Column="0" Spacing="5">
+                            <Label Text="OSC 2" TextColor="{StaticResource Gray400}" FontSize="10" />
+                            <controls:OscilloscopeControl Source="Osc2" LineColor="#FF00FF" 
+                                                          WaveformType="{Binding Osc2Waveform}" 
+                                                          Amplitude="{Binding MixOsc2}"
+                                                          NoteName="{Binding CurrentNotes}"
+                                                          VerticalOptions="FillAndExpand" />
+                            <controls:WaveformSelector SelectedWaveform="{Binding Osc2Waveform}" />
+                        </VerticalStackLayout>
+                        <controls:VerticalFader Grid.Column="1" Label="MIX" Minimum="0" Maximum="1" Value="{Binding MixOsc2, Mode=TwoWay}" WidthRequest="60" />
+                    </Grid>
+                </Grid>
+            </Border>
+            
+            <!-- COL 2: Filter & LFO -->
+            <Border Grid.Column="1" Stroke="{StaticResource Gray600}" BackgroundColor="{StaticResource Gray900}" Padding="10" StrokeShape="RoundRectangle 8">
+                 <ScrollView>
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="FILTER" FontAttributes="Bold" TextColor="{StaticResource White}" HorizontalOptions="Center"/>
+                        
+                        <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto" ColumnSpacing="5">
+                             <controls:VerticalFader Grid.Column="0" Label="CUTOFF" Minimum="20" Maximum="20000" Value="{Binding FilterCutoff, Mode=TwoWay}" IsLogarithmic="True" />
+                             <controls:VerticalFader Grid.Column="1" Label="RES" Minimum="0" Maximum="1" Value="{Binding FilterResonance, Mode=TwoWay}" />
+                             <controls:VerticalFader Grid.Column="2" Label="ENV&#x0a;AMT" Minimum="0" Maximum="1" Value="{Binding FilterEnvAmount, Mode=TwoWay}" />
+                             <controls:VerticalFader Grid.Column="3" Label="LFO&#x0a;AMT" Minimum="0" Maximum="1" Value="{Binding FilterLfoAmount, Mode=TwoWay}" />
+                        </Grid>
+
+                        <BoxView HeightRequest="1" Color="{StaticResource Gray700}"/>
+                        
+                        <Label Text="LFO" FontAttributes="Bold" TextColor="{StaticResource White}" HorizontalOptions="Center"/>
+                        <controls:VerticalFader Label="RATE" Minimum="0.1" Maximum="20" Value="{Binding LfoRate, Mode=TwoWay}" />
+
+                    </VerticalStackLayout>
+                 </ScrollView>
+            </Border>
+
+            <!-- COL 3: Envelopes -->
+            <Border Grid.Column="2" Stroke="{StaticResource Gray600}" BackgroundColor="{StaticResource Gray900}" Padding="10" StrokeShape="RoundRectangle 8">
+                <ScrollView>
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="AMP ENV" FontAttributes="Bold" TextColor="{StaticResource White}" HorizontalOptions="Center"/>
+                        
+                        <controls:EnvelopeGraphControl HeightRequest="80"
+                                                       Attack="{Binding AmpAttack}" 
+                                                       Decay="{Binding AmpDecay}"
+                                                       Sustain="{Binding AmpSustain}"
+                                                       Release="{Binding AmpRelease}"
+                                                       CurrentStage="{Binding AmpEnvStage}"
+                                                       StageProgress="{Binding AmpEnvProgress}"/>
+
+                        <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto" ColumnSpacing="5">
+                            <controls:VerticalFader Grid.Column="0" Label="A" Minimum="0.001" Maximum="2" Value="{Binding AmpAttack, Mode=TwoWay}" IsLogarithmic="True" />
+                            <controls:VerticalFader Grid.Column="1" Label="D" Minimum="0.001" Maximum="2" Value="{Binding AmpDecay, Mode=TwoWay}" IsLogarithmic="True" />
+                            <controls:VerticalFader Grid.Column="2" Label="S" Minimum="0" Maximum="1" Value="{Binding AmpSustain, Mode=TwoWay}" />
+                            <controls:VerticalFader Grid.Column="3" Label="R" Minimum="0.001" Maximum="5" Value="{Binding AmpRelease, Mode=TwoWay}" IsLogarithmic="True" />
+                        </Grid>
+
+                        <BoxView HeightRequest="1" Color="{StaticResource Gray700}"/>
+
+                        <Label Text="FILTER ENV" FontAttributes="Bold" TextColor="{StaticResource White}" HorizontalOptions="Center"/>
+                        
+                        <controls:EnvelopeGraphControl HeightRequest="80"
+                                                       Attack="{Binding FilterAttack}" 
+                                                       Decay="{Binding FilterDecay}"
+                                                       Sustain="{Binding FilterSustain}"
+                                                       Release="{Binding FilterRelease}"
+                                                       CurrentStage="{Binding FilterEnvStage}"
+                                                       StageProgress="{Binding FilterEnvProgress}"/>
+
+                        <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto" ColumnSpacing="5">
+                            <controls:VerticalFader Grid.Column="0" Label="A" Minimum="0.001" Maximum="2" Value="{Binding FilterAttack, Mode=TwoWay}" IsLogarithmic="True" />
+                            <controls:VerticalFader Grid.Column="1" Label="D" Minimum="0.001" Maximum="2" Value="{Binding FilterDecay, Mode=TwoWay}" IsLogarithmic="True" />
+                            <controls:VerticalFader Grid.Column="2" Label="S" Minimum="0" Maximum="1" Value="{Binding FilterSustain, Mode=TwoWay}" />
+                            <controls:VerticalFader Grid.Column="3" Label="R" Minimum="0.001" Maximum="5" Value="{Binding FilterRelease, Mode=TwoWay}" IsLogarithmic="True" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Border>
+
+            <!-- COL 4: Effects -->
+            <Border Grid.Column="3" Stroke="{StaticResource Gray600}" BackgroundColor="{StaticResource Gray900}" Padding="10" StrokeShape="RoundRectangle 8">
+                 <ScrollView>
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="DELAY" FontAttributes="Bold" TextColor="{StaticResource White}" HorizontalOptions="Center"/>
+                         <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto" ColumnSpacing="5">
+                            <controls:VerticalFader Grid.Column="0" Label="TIME" Minimum="0.01" Maximum="1" Value="{Binding DelayTime, Mode=TwoWay}" IsLogarithmic="True" />
+                            <controls:VerticalFader Grid.Column="1" Label="FDBK" Minimum="0" Maximum="0.95" Value="{Binding DelayFeedback, Mode=TwoWay}" />
+                            <controls:VerticalFader Grid.Column="2" Label="MIX" Minimum="0" Maximum="0.5" Value="{Binding DelayMix, Mode=TwoWay}" />
+                        </Grid>
+                        
+                        <BoxView HeightRequest="1" Color="{StaticResource Gray700}"/>
+
+                        <Label Text="REVERB" FontAttributes="Bold" TextColor="{StaticResource White}" HorizontalOptions="Center"/>
+                         <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto" ColumnSpacing="5">
+                             <controls:VerticalFader Grid.Column="0" Label="SIZE" Minimum="0.1" Maximum="1" Value="{Binding ReverbSize, Mode=TwoWay}" />
+                            <controls:VerticalFader Grid.Column="1" Label="DAMP" Minimum="0" Maximum="1" Value="{Binding ReverbDamp, Mode=TwoWay}" />
+                             <controls:VerticalFader Grid.Column="2" Label="MIX" Minimum="0" Maximum="0.5" Value="{Binding ReverbMix, Mode=TwoWay}" />
+                        </Grid>
+                    </VerticalStackLayout>
+                 </ScrollView>
+            </Border>
+
+            <!-- COL 5: Modulation & MIDI -->
+            <Border Grid.Column="4" Stroke="{StaticResource Gray600}" BackgroundColor="{StaticResource Gray900}" Padding="10" StrokeShape="RoundRectangle 8">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="MIDI" FontAttributes="Bold" TextColor="{StaticResource White}" HorizontalOptions="Center"/>
+                    <Picker ItemsSource="{Binding MidiDevices}" SelectedIndex="{Binding SelectedMidiDeviceIndex}" Title="Select Input..." TextColor="White" TitleColor="Gray" FontSize="11"/>
+                    
+                    <BoxView HeightRequest="1" Color="{StaticResource Gray700}"/>
+                    
+                    <controls:ModulationPanel VerticalOptions="Start" />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+        <!-- Piano Keyboard -->
+        <controls:PianoKeyboard Grid.Row="2" 
+                                NoteOnCommand="{Binding NoteOnCommand}" 
+                                NoteOffCommand="{Binding NoteOffCommand}"
+                                HeightRequest="150"
+                                VerticalOptions="End"/>
+    </Grid>
+
+</ContentPage>
